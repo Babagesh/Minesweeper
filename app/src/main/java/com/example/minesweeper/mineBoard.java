@@ -38,7 +38,8 @@ public class mineBoard extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        Intent intent = getIntent();
+        Intent intent = getIntent(); // Load intent
+        // Load settings from intent
         rows = intent.getIntExtra("rows", 5);
         cols = intent.getIntExtra("cols", 5);
         minePercent = intent.getIntExtra("minePercent", 10);
@@ -47,10 +48,10 @@ public class mineBoard extends AppCompatActivity {
         mineColor = intent.getIntExtra("mineColor", Color.RED);
         suspectColor = intent.getIntExtra("suspectColor", Color.YELLOW);
         cellsLeft = rows * cols - (rows * cols * minePercent / 100);
-        setupBoard();
-        placeMines();
-        calculateNearbyMines();
-        Button home = findViewById(R.id.home);
+        setupBoard(); // Set up minesweeper board
+        placeMines(); // Place mines randomly
+        calculateNearbyMines(); // Give each cell a value of nearby mines
+        Button home = findViewById(R.id.home); // Home button to return
         home.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
@@ -64,11 +65,13 @@ public class mineBoard extends AppCompatActivity {
 
     private void setupBoard()
     {
+        // Set up gridlayout dimensions
         GridLayout mineGrid = findViewById(R.id.mineGrid);
         mineGrid.removeAllViews();
         mineGrid.setRowCount(rows);
         mineGrid.setColumnCount(cols);
 
+        // Setup cell size
         cellGrid = new Cell[rows][cols];
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         int buttonSize = screenWidth / cols;
@@ -76,6 +79,7 @@ public class mineBoard extends AppCompatActivity {
         {
             for(int col = 0; col < cols; col++)
             {
+                // Create a button and cell
                 Button cellButton = new Button(this);
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = buttonSize;
@@ -86,25 +90,26 @@ public class mineBoard extends AppCompatActivity {
                 mineGrid.addView(cellButton);
                 Cell cell = new Cell(cellButton);
                 cellGrid[row][col] = cell;
+                // Set up click listener
                 cellButton.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v)
                     {
                         int row = mineGrid.indexOfChild(v) / cols;
                         int col = mineGrid.indexOfChild(v) % cols;
-                        Cell cell = cellGrid[row][col];
+                        Cell cell = cellGrid[row][col]; // Get cell which was clicked
                         // Check if cell has been revealed already
-                        // If revealed already, do nothing
                         if(!cell.beenRevealed() && !cell.flagged)
                         {
-                            boolean mine = cell.revealCell();
-                            if (mine)
+                            boolean mine = cell.isMine();
+                            if (mine) // Logic for if cell is mine
                             {
                                 for(int i = 0; i < rows; i++)
                                 {
                                     for(int j = 0; j < cols; j++)
                                     {
                                         Cell myCell = cellGrid[i][j];
+                                        myCell.getButton().setEnabled(false);
                                         if(myCell.isMine())
                                         {
                                             myCell.getButton().setBackgroundColor(mineColor);
@@ -120,32 +125,12 @@ public class mineBoard extends AppCompatActivity {
                             }
                             else
                             {
-                                cellsLeft--;
-                                if(cellsLeft == 0)
-                                {
-                                    // Game won, end the game and return to home screen
-                                    Toast toast = new Toast(getApplicationContext());
-                                    toast.setGravity(Gravity.BOTTOM, 0, 0);
-                                    toast.setDuration(Toast.LENGTH_LONG);
-                                    toast.setText("You won!");
-                                    toast.show();
-                                }
-                                int nearbyMines = cell.getNearbyMines();
-                                cell.getButton().setBackgroundColor(uncoveredColor);
-                                if(nearbyMines > 0)
-                                    cell.getButton().setText(String.valueOf(nearbyMines));
-                                else
-                                {
-                                    // Implement flood fill function here
-                                    revealCells();
-                                }
-
+                                revealCells(row, col); // Reveal cell and neighbors as needed
                             }
                         }
-
-
                     }
                 });
+                // Logic to flag cell
                 cellButton.setOnLongClickListener(new View.OnLongClickListener(){
                     @Override
                     public boolean onLongClick(View v)
@@ -155,15 +140,17 @@ public class mineBoard extends AppCompatActivity {
                         Cell cell = cellGrid[row][col];
                         if(!cell.beenRevealed())
                         {
-                            if(cell.isFlagged())
+                            if(cell.isFlagged()) // Unflag cell
                             {
                                 cell.setFlagged(false);
-                                v.setBackgroundColor(coveredColor);
+                                cell.getButton().setBackgroundColor(coveredColor);
+                                cell.getButton().setForeground(null);
                             }
-                            else
+                            else // Flag cell
                             {
                                 cell.setFlagged(true);
-                                v.setBackgroundColor(suspectColor);
+                                cell.getButton().setBackgroundColor(suspectColor);
+                                cell.getButton().setForeground(getDrawable(R.mipmap.flag_foreground));
                             }
                         }
                         return true;
@@ -173,10 +160,47 @@ public class mineBoard extends AppCompatActivity {
         }
     }
 
-    private void revealCells()
+    // Function which reveals cells and neighbors
+    private void revealCells(int row, int col)
     {
         // To implement
+        if(cellGrid[row][col].beenRevealed() || cellGrid[row][col].isFlagged() || cellGrid[row][col].isMine())
+        {
+            return;
+        }
+        cellGrid[row][col].revealCell();
+        cellGrid[row][col].getButton().setBackgroundColor(uncoveredColor);
+        cellsLeft--;
+        if(cellsLeft == 0)
+        {
+            Toast toast = new Toast(getApplicationContext());
+            toast.setGravity(Gravity.BOTTOM, 0,0);
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.setText("You won!");
+            toast.show();
+            endGame();
+            return;
+        }
+        if(cellGrid[row][col].nearbyMines != 0)
+        {
+            cellGrid[row][col].getButton().setText(String.valueOf(cellGrid[row][col].nearbyMines));
+        }
+        else
+        {
+            for(int tb = row - 1; tb <= row + 1; tb++)
+            {
+                for(int lr = col - 1; lr <= col + 1; lr++)
+                {
+                    if(lr >= 0 && lr < cols && tb >= 0 && tb < rows)
+                    {
+                        revealCells(tb, lr);
+                    }
+                }
+            }
+        }
     }
+
+    // Function to place mines on grid
     private void placeMines()
     {
         int minesToPlace = (minePercent * rows * cols) / 100;
@@ -193,6 +217,24 @@ public class mineBoard extends AppCompatActivity {
         }
     }
 
+    // End game and reveal mines
+    private void endGame()
+    {
+        for(int r = 0; r < rows; r++)
+        {
+            for(int c = 0; c < cols; c++)
+            {
+                Cell cell = cellGrid[r][c];
+                cell.getButton().setEnabled(false);
+                if(cell.isMine())
+                {
+                    cell.getButton().setBackgroundColor(mineColor);
+                }
+            }
+        }
+    }
+
+    // Set each mine to have a value of nearby mines
     private void calculateNearbyMines()
     {
         for(int row = 0; row < rows; row++)
@@ -225,6 +267,8 @@ public class mineBoard extends AppCompatActivity {
             }
         }
     }
+
+    // Cell class
     private class Cell
     {
         private Button button;
@@ -259,12 +303,9 @@ public class mineBoard extends AppCompatActivity {
             return revealed;
         }
 
-        public boolean revealCell()
+        public void revealCell()
         {
             this.revealed = true;
-            // Calculate number of nearby mines and set it
-            return this.mine;
-
         }
 
         public boolean isFlagged()

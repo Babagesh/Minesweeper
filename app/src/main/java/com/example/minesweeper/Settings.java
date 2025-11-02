@@ -60,7 +60,7 @@ public class Settings extends AppCompatActivity {
                 intent.putExtra("uncoveredColor", uncoveredColorValue);
                 intent.putExtra("mineColor", mineColorValue);
                 intent.putExtra("suspectColor", suspectColorValue);
-                startActivity(intent);
+                startActivity(intent); // Start game with settings loaded into intent
             }
         });
     }

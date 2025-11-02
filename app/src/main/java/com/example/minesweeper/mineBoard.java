@@ -29,7 +29,8 @@ public class mineBoard extends AppCompatActivity {
     private Cell[][] cellGrid;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mine_board);
@@ -91,7 +92,8 @@ public class mineBoard extends AppCompatActivity {
                 Cell cell = new Cell(cellButton);
                 cellGrid[row][col] = cell;
                 // Set up click listener
-                cellButton.setOnClickListener(new View.OnClickListener(){
+                cellButton.setOnClickListener(new View.OnClickListener()
+                {
                     @Override
                     public void onClick(View v)
                     {
@@ -131,7 +133,8 @@ public class mineBoard extends AppCompatActivity {
                     }
                 });
                 // Logic to flag cell
-                cellButton.setOnLongClickListener(new View.OnLongClickListener(){
+                cellButton.setOnLongClickListener(new View.OnLongClickListener()
+                {
                     @Override
                     public boolean onLongClick(View v)
                     {

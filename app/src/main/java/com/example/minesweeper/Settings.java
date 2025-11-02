@@ -26,7 +26,8 @@ public class Settings extends AppCompatActivity {
             return insets;
         });
         Button home = findViewById(R.id.home);
-        home.setOnClickListener(new View.OnClickListener() {
+        home.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Settings.this, MainActivity.class);
@@ -41,7 +42,8 @@ public class Settings extends AppCompatActivity {
         Spinner mineColor = findViewById(R.id.mineColor);
         Spinner suspectColor = findViewById(R.id.suspectColor);
         Button submit = findViewById(R.id.submit);
-        submit.setOnClickListener(new View.OnClickListener() {
+        submit.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 int rowsValue = Integer.parseInt(rows.getSelectedItem().toString());

@@ -25,7 +25,14 @@ public class Settings extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        Button home = findViewById(R.id.home);
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Settings.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
         Spinner rows = findViewById(R.id.rows);
         Spinner cols = findViewById(R.id.cols);
         Spinner percentMines = findViewById(R.id.percentMines);
